@@ -1,10 +1,10 @@
 <?php
+echo "listing files...\n";
+
 error_reporting(E_ALL);
 
 define('TILE_WIDTH', 256);
 define('TILE_HEIGHT', 256);
-
-echo "a\n";
 
 $tiles = array();
 $filesy = scandir('./tiles/16');
@@ -23,23 +23,32 @@ for ($i=0; $i < count($filesy); $i++) {
 	}
 }
 
-var_dump($tiles);
+echo "merging files...\n";
 
 $saveTo = 'result.png';
 
-$image = imagecreate(TILE_WIDTH * count($tiles), TILE_HEIGHT * count($tiles[2]));
-var_dump("create image".TILE_WIDTH * count($tiles).'*'.TILE_HEIGHT * count($tiles[0]));
-foreach($tiles as $row => $columns) {
-	foreach($columns as $col => $filename) {
-	//var_dump($filename);
+$nbtilesy = count($tiles);
+$nbtilesx = count($tiles[0]);
+/*
+	TODO limit file size
+	$nbtilesy = min($nbtilesy, 10);
+	$nbtilesx = min($nbtilesx, 10);
+*/
+
+$image = imagecreate(TILE_WIDTH * $nbtilesx, TILE_HEIGHT * $nbtilesx);
+var_dump("create image".TILE_WIDTH * $nbtilesx.'*'.TILE_HEIGHT * $nbtilesy);
+
+
+for ($y=0; $y < $nbtilesy; $y++) {
+	for ($x=0; $x < $nbtilesx ; $x++) {
+		$filename = $tiles[$y][$x];
 		$tile = imagecreatefrompng($filename);
 		if($tile === false) {
 			var_dump('failed to create from '.$filename);
 		}
 		else {
-			imagecopy($image, $tile, $col * TILE_WIDTH, $row * TILE_HEIGHT, 0, 0, TILE_WIDTH, TILE_HEIGHT);
+			imagecopy($image, $tile, $x * TILE_WIDTH, $y * TILE_HEIGHT, 0, 0, TILE_WIDTH, TILE_HEIGHT);
 		}
-
 	}
 }
 
