@@ -5,7 +5,11 @@ error_reporting(E_ALL);
 
 define('TILE_WIDTH', 256);
 define('TILE_HEIGHT', 256);
+define('EXPORT_DIRECTORY', './build/');
+define('MAX_TILES_PER_MERGE', 50);
 
+
+/// listing
 $tiles = array();
 $filesy = scandir('./tiles/16');
 for ($i=0; $i < count($filesy); $i++) { 
@@ -22,36 +26,32 @@ for ($i=0; $i < count($filesy); $i++) {
 		array_push($tiles, $tilesline);
 	}
 }
+echo '- listed about '.(count($tiles) * count($tiles[0])).' files.'."\n";
+
+/// merging
 
 echo "merging files...\n";
 
 $nbtilesy = count($tiles);
 $nbtilesx = count($tiles[0]);
-/*
-	TODO limit file size
-	$nbtilesy = min($nbtilesy, 10);
-	$nbtilesx = min($nbtilesx, 10);
-*/
-$startx = 0;
-$starty = 0;
 
-$pertiles = 50;
+$startx = 0;
+$pertiles = MAX_TILES_PER_MERGE;
 
 while($startx < $nbtilesx) {
+	$starty = 0;
 	while($starty < $nbtilesy) {
 		$perx = min($pertiles, $nbtilesx - $startx);
 		$pery = min($pertiles, $nbtilesy - $starty);
-		generate($tiles, $startx, $starty, $perx,$pery);
+		generate($tiles, $startx, $starty, $perx, $pery);
 
 		$starty = $starty + $pery;
 	}
-	$tilesx = $tilesx + $perx;
-
+	$startx = $startx + $perx;
 }
 
-
 function generate($tiles, $startx, $starty, $perx, $pery){
-	$saveTo = 'result-'.$starty.'-'.$startx.'.png';
+	$saveTo = EXPORT_DIRECTORY.'result-'.$starty.'-'.$startx.'.png';
 
 	$image = imagecreate(TILE_WIDTH * $perx, TILE_HEIGHT * $perx);
 
@@ -69,6 +69,6 @@ function generate($tiles, $startx, $starty, $perx, $pery){
 	}
 
 	imagepng($image, $saveTo);
-	echo 'wrote '.$saveTo .' '.TILE_WIDTH * $perx.'*'.TILE_HEIGHT * $pery.'px'."\n";
+	echo '- wrote '.$saveTo .' '.TILE_WIDTH * $perx.'*'.TILE_HEIGHT * $pery.'px.'."\n";
 }
 
