@@ -25,8 +25,6 @@ for ($i=0; $i < count($filesy); $i++) {
 
 echo "merging files...\n";
 
-$saveTo = 'result.png';
-
 $nbtilesy = count($tiles);
 $nbtilesx = count($tiles[0]);
 /*
@@ -34,22 +32,43 @@ $nbtilesx = count($tiles[0]);
 	$nbtilesy = min($nbtilesy, 10);
 	$nbtilesx = min($nbtilesx, 10);
 */
+$startx = 0;
+$starty = 0;
 
-$image = imagecreate(TILE_WIDTH * $nbtilesx, TILE_HEIGHT * $nbtilesx);
-var_dump("create image".TILE_WIDTH * $nbtilesx.'*'.TILE_HEIGHT * $nbtilesy);
+$pertiles = 50;
 
+while($startx < $nbtilesx) {
+	while($starty < $nbtilesy) {
+		$perx = min($pertiles, $nbtilesx - $startx);
+		$pery = min($pertiles, $nbtilesy - $starty);
+		generate($tiles, $startx, $starty, $perx,$pery);
 
-for ($y=0; $y < $nbtilesy; $y++) {
-	for ($x=0; $x < $nbtilesx ; $x++) {
-		$filename = $tiles[$y][$x];
-		$tile = imagecreatefrompng($filename);
-		if($tile === false) {
-			var_dump('failed to create from '.$filename);
-		}
-		else {
-			imagecopy($image, $tile, $x * TILE_WIDTH, $y * TILE_HEIGHT, 0, 0, TILE_WIDTH, TILE_HEIGHT);
-		}
+		$starty = $starty + $pery;
 	}
+	$tilesx = $tilesx + $perx;
+
 }
 
-imagepng($image, $saveTo);
+
+function generate($tiles, $startx, $starty, $perx, $pery){
+	$saveTo = 'result-'.$starty.'-'.$startx.'.png';
+
+	$image = imagecreate(TILE_WIDTH * $perx, TILE_HEIGHT * $perx);
+
+	for ($y=0; $y < $pery; $y++) {
+		for ($x=0; $x < $perx ; $x++) {
+			$filename = $tiles[($starty + $y)][($startx + $x)];
+			$tile = imagecreatefrompng($filename);
+			if($tile === false) {
+				var_dump('failed to create from '.$filename);
+			}
+			else {
+				imagecopy($image, $tile, $x * TILE_WIDTH, $y * TILE_HEIGHT, 0, 0, TILE_WIDTH, TILE_HEIGHT);
+			}
+		}
+	}
+
+	imagepng($image, $saveTo);
+	echo 'wrote '.$saveTo .' '.TILE_WIDTH * $perx.'*'.TILE_HEIGHT * $pery.'px'."\n";
+}
+
