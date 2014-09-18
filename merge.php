@@ -1,11 +1,15 @@
 <?php
+echo "listing files...\n";
+
 error_reporting(E_ALL);
 
 define('TILE_WIDTH', 256);
 define('TILE_HEIGHT', 256);
+define('EXPORT_DIRECTORY', './build/');
+define('MAX_TILES_PER_MERGE', 50);
 
-echo "a\n";
 
+/// listing
 $tiles = array();
 $filesy = scandir('./tiles/16');
 for ($i=0; $i < count($filesy); $i++) { 
@@ -22,25 +26,49 @@ for ($i=0; $i < count($filesy); $i++) {
 		array_push($tiles, $tilesline);
 	}
 }
+echo '- listed about '.(count($tiles) * count($tiles[0])).' files.'."\n";
 
-var_dump($tiles);
+/// merging
 
-$saveTo = 'result.png';
+echo "merging files...\n";
 
-$image = imagecreate(TILE_WIDTH * count($tiles), TILE_HEIGHT * count($tiles[2]));
-var_dump("create image".TILE_WIDTH * count($tiles).'*'.TILE_HEIGHT * count($tiles[0]));
-foreach($tiles as $row => $columns) {
-	foreach($columns as $col => $filename) {
-	//var_dump($filename);
-		$tile = imagecreatefrompng($filename);
-		if($tile === false) {
-			var_dump('failed to create from '.$filename);
-		}
-		else {
-			imagecopy($image, $tile, $col * TILE_WIDTH, $row * TILE_HEIGHT, 0, 0, TILE_WIDTH, TILE_HEIGHT);
-		}
+$nbtilesy = count($tiles);
+$nbtilesx = count($tiles[0]);
 
+$startx = 0;
+$pertiles = MAX_TILES_PER_MERGE;
+
+while($startx < $nbtilesx) {
+	$starty = 0;
+	while($starty < $nbtilesy) {
+		$perx = min($pertiles, $nbtilesx - $startx);
+		$pery = min($pertiles, $nbtilesy - $starty);
+		generate($tiles, $startx, $starty, $perx, $pery);
+
+		$starty = $starty + $pery;
 	}
+	$startx = $startx + $perx;
 }
 
-imagepng($image, $saveTo);
+function generate($tiles, $startx, $starty, $perx, $pery){
+	$saveTo = EXPORT_DIRECTORY.'result-'.$starty.'-'.$startx.'.png';
+
+	$image = imagecreate(TILE_WIDTH * $perx, TILE_HEIGHT * $perx);
+
+	for ($y=0; $y < $pery; $y++) {
+		for ($x=0; $x < $perx ; $x++) {
+			$filename = $tiles[($starty + $y)][($startx + $x)];
+			$tile = imagecreatefrompng($filename);
+			if($tile === false) {
+				var_dump('failed to create from '.$filename);
+			}
+			else {
+				imagecopy($image, $tile, $x * TILE_WIDTH, $y * TILE_HEIGHT, 0, 0, TILE_WIDTH, TILE_HEIGHT);
+			}
+		}
+	}
+
+	imagepng($image, $saveTo);
+	echo '- wrote '.$saveTo .' '.TILE_WIDTH * $perx.'*'.TILE_HEIGHT * $pery.'px.'."\n";
+}
+
