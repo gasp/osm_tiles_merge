@@ -1,13 +1,14 @@
 {
-  "name": "paris_toner_poster",
-  "version": "0.0.0",
-  "description": "",
+  "name": "osm_tiles_merge",
+  "version": "0.1.0",
+  "description": "osm tiles merger",
   "main": "load.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node load.js && php merge.php"
   },
-  "author": "",
-  "license": "BSD-2-Clause",
+  "author": "gasp",
+  "license": "WTFPL",
   "dependencies": {
     "async": "*"
   }
