@@ -31,9 +31,15 @@ $image = imagecreate(TILE_WIDTH * count($tiles), TILE_HEIGHT * count($tiles[2]))
 var_dump("create image".TILE_WIDTH * count($tiles).'*'.TILE_HEIGHT * count($tiles[0]));
 foreach($tiles as $row => $columns) {
 	foreach($columns as $col => $filename) {
-		var_dump($filename);
+	//var_dump($filename);
 		$tile = imagecreatefrompng($filename);
-		imagecopy($image, $tile, $col * TILE_WIDTH, $row * TILE_HEIGHT, 0, 0, TILE_WIDTH, TILE_HEIGHT);
+		if($tile === false) {
+			var_dump('failed to create from '.$filename);
+		}
+		else {
+			imagecopy($image, $tile, $col * TILE_WIDTH, $row * TILE_HEIGHT, 0, 0, TILE_WIDTH, TILE_HEIGHT);
+		}
+
 	}
 }
 
